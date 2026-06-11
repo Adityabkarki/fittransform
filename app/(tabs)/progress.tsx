@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { C } from "../../constants/theme";
 import { GAINS } from "../../constants/gains";
@@ -10,8 +10,6 @@ import { fetchAllWorkoutLogs } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import Metric from "../../components/Metric";
 import StatBox from "../../components/StatBox";
-import { Pressable } from "react-native";
-import { useAuth } from "../../context/AuthContext";
 
 const dkey = (d: Date) => d.toISOString().slice(0, 10);
 
