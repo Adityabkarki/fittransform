@@ -1,26 +1,28 @@
-# Fly.io config for FitTransform PocketBase server
-# Deploy: fly launch --config server/fly.toml  (from repo root)
-# Region "sin" = Singapore — closest to South Asia
+# fly.toml app configuration file generated for fittransform-pb on 2026-06-11T01:07:27-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "fittransform-pb"
-primary_region = "sin"
+app = 'fittransform-pb'
+primary_region = 'sin'
 
 [build]
-  dockerfile = "server/Dockerfile"
+  dockerfile = 'Dockerfile'
+
+[[mounts]]
+  source = 'pb_data'
+  destination = '/pb/pb_data'
+  initial_size = '1gb'
 
 [http_service]
   internal_port = 8090
   force_https = true
-  auto_stop_machines = "stop"    # free: machine sleeps when no traffic
-  auto_start_machines = true     # wakes in ~2s on first request
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
   min_machines_running = 0
 
 [[vm]]
-  cpu_kind = "shared"
+  memory = '256mb'
+  cpu_kind = 'shared'
   cpus = 1
-  memory = "256mb"               # enough for 1000 active users; upgrade to 512mb at ~$3/mo if needed
-
-[[mounts]]
-  source = "pb_data"             # persistent volume — $0.15/GB/mo
-  destination = "/pb/pb_data"
-  initial_size = "1gb"
+  memory_mb = 256
