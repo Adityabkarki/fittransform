@@ -8,6 +8,7 @@ export interface SetLog {
 }
 
 export interface DayLog {
+  cloudId?: string; // PocketBase record ID — set after first cloud sync
   mode: "gym" | "home";
   session: string;
   sets: Record<string, SetLog[]>;

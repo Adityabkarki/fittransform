@@ -10,27 +10,56 @@ import { GAINS } from "../../constants/gains";
 import { today, nextSession, fmtDate } from "../../lib/progress";
 import { loadData, saveData } from "../../lib/storage";
 import type { AppData, DayLog } from "../../lib/storage";
+import { pushWorkoutLog, fetchAllWorkoutLogs } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 import ExerciseSheet from "../../components/ExerciseSheet";
 import type { PlanItem } from "../../constants/plans";
 
 export default function TodayScreen() {
+  const { userId } = useAuth();
   const [data, setDataRaw] = useState<AppData>({ logs: {}, diet: {} });
   const [loaded, setLoaded] = useState(false);
   const [sheet, setSheet] = useState<{ exId: string; meta?: PlanItem } | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    loadData().then((d) => { setDataRaw(d); setLoaded(true); });
-  }, []);
+    loadData().then(async (local) => {
+      setDataRaw(local);
+      setLoaded(true);
+      // Background cloud sync — merges cloud logs into local without blocking UI
+      if (userId) {
+        try {
+          const cloudLogs = await fetchAllWorkoutLogs();
+          setDataRaw((prev) => {
+            const merged = { ...prev.logs };
+            for (const [date, log] of Object.entries(cloudLogs)) {
+              if (!merged[date]) merged[date] = log;
+            }
+            const next = { ...prev, logs: merged };
+            saveData(next);
+            return next;
+          });
+        } catch {}
+      }
+    });
+  }, [userId]);
 
   const setData = useCallback((fn: (prev: AppData) => AppData) => {
     setDataRaw((prev) => {
       const next = fn(prev);
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => saveData(next), 600);
+      saveTimer.current = setTimeout(async () => {
+        await saveData(next);
+        // Push today's log to cloud after local save
+        const tk = today();
+        const todayLog = next.logs[tk];
+        if (todayLog && userId) {
+          pushWorkoutLog(tk, todayLog).catch(() => {});
+        }
+      }, 600);
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const tk = today();
   const log: DayLog = data.logs?.[tk] || {

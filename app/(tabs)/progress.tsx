@@ -4,19 +4,38 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { C } from "../../constants/theme";
 import { GAINS } from "../../constants/gains";
 import { computeProgress, today } from "../../lib/progress";
-import { loadData } from "../../lib/storage";
+import { loadData, saveData } from "../../lib/storage";
 import type { AppData } from "../../lib/storage";
+import { fetchAllWorkoutLogs } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 import Metric from "../../components/Metric";
 import StatBox from "../../components/StatBox";
+import { Pressable } from "react-native";
+import { useAuth } from "../../context/AuthContext";
 
 const dkey = (d: Date) => d.toISOString().slice(0, 10);
 
 export default function ProgressScreen() {
+  const { userId, isGuest, logout } = useAuth();
   const [data, setData] = useState<AppData>({ logs: {}, diet: {} });
 
   useEffect(() => {
-    loadData().then(setData);
-  }, []);
+    loadData().then(async (local) => {
+      setData(local);
+      // Merge full cloud history so progress scores are accurate on any device
+      if (userId) {
+        try {
+          const cloudLogs = await fetchAllWorkoutLogs();
+          setData((prev) => {
+            const merged = { ...prev.logs, ...cloudLogs };
+            const next = { ...prev, logs: merged };
+            saveData(next);
+            return next;
+          });
+        } catch {}
+      }
+    });
+  }, [userId]);
 
   const p = useMemo(() => computeProgress(data), [data]);
 
@@ -36,7 +55,14 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Your transformation</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 0 }}>
+          <Text style={styles.heading}>Your transformation</Text>
+          <Pressable onPress={logout} style={{ padding: 6 }}>
+            <Text style={{ color: C.faint, fontSize: 12, fontWeight: "700" }}>
+              {isGuest ? "Sign in" : "Sign out"}
+            </Text>
+          </Pressable>
+        </View>
 
         <View style={styles.statRow}>
           <StatBox big={`${p.fatKg.toFixed(2)} kg`} small="EST. FAT BURNED" color={C.amber} />

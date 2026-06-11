@@ -6,8 +6,11 @@ import { DIET, PROTEIN_TARGET } from "../../constants/diet";
 import { today, fmtDate } from "../../lib/progress";
 import { loadData, saveData } from "../../lib/storage";
 import type { AppData } from "../../lib/storage";
+import { pushDietLog } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function DietScreen() {
+  const { userId } = useAuth();
   const [data, setDataRaw] = useState<AppData>({ logs: {}, diet: {} });
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -19,7 +22,12 @@ export default function DietScreen() {
     setDataRaw((prev) => {
       const next = fn(prev);
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => saveData(next), 600);
+      saveTimer.current = setTimeout(async () => {
+        await saveData(next);
+        const tk = today();
+        const todayDiet = next.diet?.[tk];
+        if (todayDiet && userId) pushDietLog(tk, todayDiet).catch(() => {});
+      }, 600);
       return next;
     });
   }, []);
