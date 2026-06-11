@@ -1,0 +1,16 @@
+export const C = {
+  bg: "#10141B",
+  panel: "#1A2029",
+  panel2: "#232B37",
+  line: "#2F3A49",
+  text: "#EAEFF6",
+  dim: "#93A1B4",
+  faint: "#5D6B7E",
+  amber: "#F2A33C",
+  amberDk: "#B97718",
+  teal: "#43BDB3",
+  red: "#E2574C",
+  green: "#5BBE7A",
+  muscle: "#3A4556",
+  muscleHot: "#F2A33C",
+};
