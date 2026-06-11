@@ -17,6 +17,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "package": "com.adityabkarki.fittransform",
+      "versionCode": 1,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -31,12 +33,19 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#10141B"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "102b5e9e-06ff-4278-bb6e-d0533abe8b11"
+      }
+    },
+    "owner": "adityaxxxx"
   }
 }
